@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>广东省灵活就业社保补贴条件测算工具</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+        }
+        body {
+            background: #f8fafc;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eaeaea;
+        }
+        h1 {
+            color: #1a5276;
+            margin-bottom: 10px;
+            font-size: 1.8em;
+        }
+        h2 {
+            color: #2874a6;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+        }
+        h2:before {
+            content: "";
+            display: inline-block;
+            width: 4px;
+            height: 18px;
+            background: #2874a6;
+            margin-right: 10px;
+            border-radius: 2px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .form-item {
+            flex: 1;
+            min-width: 200px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        input:focus, select:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+        }
+        .checkbox-group {
+            margin: 15px 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 12px;
+        }
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            font-weight: normal;
+            margin-bottom: 0;
+            cursor: pointer;
+            padding: 12px 15px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            border: 1px solid #eaeaea;
+        }
+        .checkbox-group label:hover {
+            background-color: #f0f8ff;
+            border-color: #c5e1f5;
+        }
+        .checkbox-group input {
+            width: auto;
+            margin-right: 10px;
+        }
+        .button-group {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            gap: 15px;
+        }
+        button {
+            padding: 14px 35px;
+            background-color: #2874a6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        button:hover {
+            background-color: #1a5276;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        #resetBtn {
+            background-color: #7f8c8d;
+        }
+        #resetBtn:hover {
+            background-color: #616a6b;
+        }
+        .result {
+            margin-top: 30px;
+            padding: 25px;
+            border-radius: 8px;
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .eligible {
+            background-color: #f0f9f5;
+            border-left: 5px solid #27ae60;
+        }
+        .not-eligible {
+            background-color: #fef5e7;
+            border-left: 5px solid #e74c3c;
+        }
+        .result h3 {
+            margin-top: 0;
+            color: #2c3e50;
+            font-size: 1.4em;
+            display: flex;
+            align-items: center;
+        }
+        .result h3:before {
+            content: "";
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+        .eligible h3:before {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2327ae60"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>');
+        }
+        .not-eligible h3:before {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23e74c3c"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/></svg>');
+        }
+        .result p {
+            margin: 12px 0;
+        }
+        .result ul {
+            padding-left: 20px;
+        }
+        .result li {
+            margin-bottom: 8px;
+        }
+        .section {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border: 1px solid #eaeaea;
+        }
+        .tooltip {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-top: 5px;
+            font-style: italic;
+        }
+        .highlight {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .subsidy-details {
+            background-color: #eaf2f8;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #7f8c8d;
+            font-size: 0.9em;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+        .process-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .step {
+            display: flex;
+            align-items: flex-start;
+        }
+        .step-number {
+            background: #2874a6;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        .step-content {
+            flex: 1;
+        }
+        .hidden {
+            display: none;
+        }
+        .info-box {
+            background-color: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        .result-section {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px dashed #e0e0e0;
+        }
+        .result-section:last-child {
+            border-bottom: none;
+        }
+        .result-section-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+        }
+        .result-section-title:before {
+            content: "";
+            display: inline-block;
+            width: 6px;
+            height: 18px;
+            background: #2874a6;
+            margin-right: 10px;
+            border-radius: 3px;
+        }
+        .key-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border-left: 4px solid #3498db;
+        }
+        .retirement-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .retirement-item {
+            flex: 1;
+            min-width: 200px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #3498db;
+        }
+        .retirement-label {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+        }
+        .retirement-value {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #2c3e50;
+        }
+        .condition-type {
+            color: #e74c3c;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            .form-group {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .form-item {
+                min-width: 100%;
+            }
+            .checkbox-group {
+                grid-template-columns: 1fr;
+            }
+            .button-group {
+                flex-direction: column;
+            }
+            button {
+                width: 100%;
+            }
+            .retirement-info {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>广东省灵活就业社保补贴领取测算</h1>
+        </header>
+        
+        <div class="section">
+            <h2>个人信息</h2>
+            <div class="form-group">
+                <div class="form-item">
+                    <label for="gender">性别</label>
+                    <select id="gender">
+                        <option value="">请选择</option>
+                        <option value="male">男</option>
+                        <option value="female">女</option>
+                    </select>
+                </div>
+                
+                <div class="form-item">
+                    <label for="birthdate">出生日期</label>
+                    <input type="date" id="birthdate">
+                </div>
+                
+                <div class="form-item">
+                    <label for="hukou">户籍</label>
+                    <select id="hukou">
+                        <option value="">请选择</option>
+                        <option value="广东省">广东省</option>
+                        <option value="北京市">北京市</option>
+                        <option value="天津市">天津市</option>
+                        <option value="河北省">河北省</option>
+                        <option value="山西省">山西省</option>
+                        <option value="内蒙古自治区">内蒙古自治区</option>
+                        <option value="辽宁省">辽宁省</option>
+                        <option value="吉林省">吉林省</option>
+                        <option value="黑龙江省">黑龙江省</option>
+                        <option value="上海市">上海市</option>
+                        <option value="江苏省">江苏省</option>
+                        <option value="浙江省">浙江省</option>
+                        <option value="安徽省">安徽省</option>
+                        <option value="福建省">福建省</option>
+                        <option value="江西省">江西省</option>
+                        <option value="山东省">山东省</option>
+                        <option value="河南省">河南省</option>
+                        <option value="湖北省">湖北省</option>
+                        <option value="湖南省">湖南省</option>
+                        <option value="广西壮族自治区">广西壮族自治区</option>
+                        <option value="海南省">海南省</option>
+                        <option value="重庆市">重庆市</option>
+                        <option value="四川省">四川省</option>
+                        <option value="贵州省">贵州省</option>
+                        <option value="云南省">云南省</option>
+                        <option value="西藏自治区">西藏自治区</option>
+                        <option value="陕西省">陕西省</option>
+                        <option value="甘肃省">甘肃省</option>
+                        <option value="青海省">青海省</option>
+                        <option value="宁夏回族自治区">宁夏回族自治区</option>
+                        <option value="新疆维吾尔自治区">新疆维吾尔自治区</option>
+                        <option value="台湾省">台湾省</option>
+                        <option value="香港特别行政区">香港特别行政区</option>
+                        <option value="澳门特别行政区">澳门特别行政区</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="femaleJobType" class="form-group hidden">
+                <div class="form-item">
+                    <label for="jobType">岗位性质（女性需填写）</label>
+                    <select id="jobType">
+                        <option value="">请选择</option>
+                        <option value="management">管理岗/技术岗/灵活就业人员</option>
+                        <option value="nonManagement">非管理技术岗</option>
+                    </select>
+                    <p class="tooltip">请根据您劳动合同签署的岗位性质选择</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>请选择您的情况（可多选）</h2>
+            <p class="tooltip">根据您的实际情况选择以下适用条件</p>
+            
+            <div class="checkbox-group">
+                <label>
+                    <input type="checkbox" name="condition" value="graduate">
+                    毕业2年内高校毕业生
+                </label>
+                
+                <label>
+                    <input type="checkbox" name="condition" value="disability">
+                    残疾人员（持有残疾人证或伤残证件）
+                </label>
+                
+                <label>
+                    <input type="checkbox" name="condition" value="lowIncome">
+                    享受最低生活保障待遇人员
+                </label>
+                
+                <label>
+                    <input type="checkbox" name="condition" value="zeroUrban">
+                    城镇"零就业家庭"人员
+                </label>
+                
+                <label>
+                    <input type="checkbox" name="condition" value="zeroRural">
+                    农村零转移就业原建档立卡贫困家庭人员
+                </label>
+                
+                <label>
+                    <input type="checkbox" name="condition" value="landless">
+                    失地农民
+                </label>
+                
+                <label>
+                    <input type="checkbox" name="condition" value="unemployed1Year">
+                    连续失业1年以上人员
+                </label>
+                
+                <label>
+                    <input type="checkbox" name="condition" value="rehab">
+                    戒毒康复人员
+                </label>
+                
+                <label>
+                    <input type="checkbox" name="condition" value="released">
+                    刑满释放人员
+                </label>
+                
+                <label>
+                    <input type="checkbox" name="condition" value="mentalRehab">
+                    精神障碍康复人员
+                </label>
+                
+                <label>
+                    <input type="checkbox" name="condition" value="exMilitary">
+                    失业6个月以上的退役军人
+                </label>
+                
+                <label>
+                    <input type="checkbox" name="condition" value="caregiver">
+                    需赡养患重大疾病直系亲属人员
+                </label>
+                
+                <label>
+                    <input type="checkbox" name="condition" value="none">
+                    以上都不是
+                </label>
+            </div>
+        </div>
+        
+        <div class="button-group">
+            <button id="calculateBtn">测算资格</button>
+            <button id="resetBtn">重置</button>
+        </div>
+        
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('gender').addEventListener('change', function() {
+            const femaleJobTypeDiv = document.getElementById('femaleJobType');
+            if (this.value === 'female') {
+                femaleJobTypeDiv.classList.remove('hidden');
+            } else {
+                femaleJobTypeDiv.classList.add('hidden');
+                document.getElementById('jobType').value = '';
+            }
+        });
+        
+        document.getElementById('calculateBtn').addEventListener('click', function() {
+            calculateEligibility();
+        });
+        
+        document.getElementById('resetBtn').addEventListener('click', function() {
+            resetForm();
+        });
+        
+        // 实现"以上都不是"与其他选项的互斥逻辑
+        document.querySelectorAll('input[name="condition"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                if (this.value === 'none' && this.checked) {
+                    // 如果选择了"以上都不是"，取消其他所有选项
+                    document.querySelectorAll('input[name="condition"]').forEach(cb => {
+                        if (cb !== this) cb.checked = false;
+                    });
+                } else if (this.checked && this.value !== 'none') {
+                    // 如果选择了其他选项，取消"以上都不是"
+                    document.querySelector('input[name="condition"][value="none"]').checked = false;
+                }
+            });
+        });
+        
+        function calculateEligibility() {
+            // 获取基本信息
+            const gender = document.getElementById('gender').value;
+            const birthdate = document.getElementById('birthdate').value;
+            const hukou = document.getElementById('hukou').value;
+            const jobType = document.getElementById('jobType').value;
+            
+            // 获取就业困难人员条件
+            const conditions = document.querySelectorAll('input[name="condition"]:checked');
+            const conditionValues = Array.from(conditions).map(c => c.value);
+            
+            // 验证基本输入
+            if (!gender || !birthdate || !hukou) {
+                alert('请填写完整的个人信息');
+                return;
+            }
+            
+            // 如果是女性，需要验证岗位性质
+            if (gender === 'female' && !jobType) {
+                alert('请选择您的岗位性质');
+                return;
+            }
+            
+            // 验证是否选择了条件
+            if (conditions.length === 0) {
+                alert('请至少选择一项您的情况');
+                return;
+            }
+            
+            // 计算年龄和退休信息
+            const birthDate = new Date(birthdate);
+            const today = new Date();
+            
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            
+            // 计算退休年龄和退休时间
+            const retirementInfo = calculateRetirement(gender, birthDate.getFullYear(), birthDate.getMonth()+1, jobType);
+            
+// 判断是否为就业困难人员
+let isEmploymentDifficult = false;
+let employmentDifficultReason = [];
+
+// 检查是否选择了"以上都不是"
+const selectedNone = conditionValues.includes('none');
+
+if (selectedNone) {
+    // 如果选择了"以上都不是"，检查是否满足大龄失业人员条件
+    if ((gender === 'female' && age >= 40) || (gender === 'male' && age >= 50)) {
+        isEmploymentDifficult = true;
+        employmentDifficultReason.push('大龄失业人员');
+    }
+} else if (conditions.length > 0) {
+    // 如果选择了其他条件
+    isEmploymentDifficult = true;
+    conditions.forEach(condition => {
+        employmentDifficultReason.push(getConditionText(condition.value));
+    });
+}
+
+// 判断是否符合补贴条件
+// 毕业2年内高校毕业生不受户籍限制
+const isEligible = conditionValues.includes('graduate') || 
+                   (isEmploymentDifficult && hukou === '广东省');
+                   
+            
+            // 计算补贴期限
+            let subsidyPeriod = '';
+            let subsidyAmount = 0;
+            let subsidyMonths = 0;
+            
+            if (isEligible) {
+                // 计算距离退休的月份数
+                const monthsToRetirement = (retirementInfo.retirementYear - today.getFullYear()) * 12 + 
+                                          (retirementInfo.retirementMonth - (today.getMonth()+1));
+                
+                // 判断是否距法定退休年龄不足5年
+                if (monthsToRetirement <= 60) {
+                    subsidyMonths = monthsToRetirement;
+                    subsidyPeriod = `可享受补贴至法定退休年龄（${retirementInfo.retirementAge}岁），共${Math.floor(subsidyMonths/12)}年${subsidyMonths%12}个月`;
+                } else {
+                    subsidyMonths = 36;
+                    subsidyPeriod = "可享受补贴累计最长3年（36个月）";
+                }
+                
+                subsidyAmount = subsidyMonths * 800;
+            }
+            
+            // 显示结果
+            displayResult(isEligible, isEmploymentDifficult, employmentDifficultReason, 
+                         conditionValues.includes('graduate'), age, subsidyPeriod, subsidyAmount, 
+                         retirementInfo, hukou);
+        }
+        
+        function calculateRetirement(gender, birthYear, birthMonth, jobType) {
+            let originalRetirementAge = 0;
+            let delayRate = 0;
+            let maxDelayMonths = 0;
+            let finalRetirementAge = 0;
+            
+            if (gender === 'male') {
+                originalRetirementAge = 60;
+                delayRate = 4; // 每4个月延迟1个月
+                maxDelayMonths = 36; // 最多延迟36个月（3年）
+                finalRetirementAge = 63;
+                
+                // 计算延迟月数
+                let delayMonths = 0;
+                const baseYear = 1965;
+                
+                if (birthYear >= 1977) {
+                    delayMonths = maxDelayMonths;
+                } else {
+                    const monthsFromBase = (birthYear - baseYear) * 12 + (birthMonth - 1);
+                    delayMonths = Math.min(Math.floor(monthsFromBase / delayRate), maxDelayMonths);
+                }
+                
+                // 计算实际退休年龄和退休时间
+                const retirementYear = birthYear + originalRetirementAge + Math.floor(delayMonths / 12);
+                const retirementMonth = birthMonth + (delayMonths % 12);
+                
+                // 调整月份和年份
+                let adjustedRetirementYear = retirementYear;
+                let adjustedRetirementMonth = retirementMonth;
+                
+                if (adjustedRetirementMonth > 12) {
+                    adjustedRetirementYear += 1;
+                    adjustedRetirementMonth -= 12;
+                }
+                
+                const actualRetirementAge = originalRetirementAge + (delayMonths / 12);
+                
+                return {
+                    originalAge: originalRetirementAge,
+                    actualAge: actualRetirementAge,
+                    retirementYear: adjustedRetirementYear,
+                    retirementMonth: adjustedRetirementMonth,
+                    delayMonths: delayMonths,
+                    retirementAge: finalRetirementAge
+                };
+            } else {
+                // 女性
+                if (jobType === 'management') {
+                    originalRetirementAge = 55;
+                    delayRate = 4; // 每4个月延迟1个月
+                    maxDelayMonths = 36; // 最多延迟36个月（3年）
+                    finalRetirementAge = 58;
+                } else {
+                    originalRetirementAge = 50;
+                    delayRate = 2; // 每2个月延迟1个月
+                    maxDelayMonths = 60; // 最多延迟60个月（5年）
+                    finalRetirementAge = 55;
+                }
+                
+                // 计算延迟月数
+                let delayMonths = 0;
+                const baseYear = jobType === 'management' ? 1970 : 1975;
+                
+                const cutoffYear = jobType === 'management' ? 1982 : 1985;
+                if (birthYear >= cutoffYear) {
+                    delayMonths = maxDelayMonths;
+                } else {
+                    const monthsFromBase = (birthYear - baseYear) * 12 + (birthMonth - 1);
+                    delayMonths = Math.min(Math.floor(monthsFromBase / delayRate), maxDelayMonths);
+                }
+                
+                // 计算实际退休年龄和退休时间
+                const retirementYear = birthYear + originalRetirementAge + Math.floor(delayMonths / 12);
+                const retirementMonth = birthMonth + (delayMonths % 12);
+                
+                // 调整月份和年份
+                let adjustedRetirementYear = retirementYear;
+                let adjustedRetirementMonth = retirementMonth;
+                
+                if (adjustedRetirementMonth > 12) {
+                    adjustedRetirementYear += 1;
+                    adjustedRetirementMonth -= 12;
+                }
+                
+                const actualRetirementAge = originalRetirementAge + (delayMonths / 12);
+                
+                return {
+                    originalAge: originalRetirementAge,
+                    actualAge: actualRetirementAge,
+                    retirementYear: adjustedRetirementYear,
+                    retirementMonth: adjustedRetirementMonth,
+                    delayMonths: delayMonths,
+                    retirementAge: finalRetirementAge
+                };
+            }
+        }
+        
+        function getConditionText(value) {
+            const conditionTexts = {
+                'graduate': '毕业2年内高校毕业生',
+                'disability': '残疾人员',
+                'lowIncome': '享受最低生活保障待遇人员',
+                'zeroUrban': '城镇"零就业家庭"人员',
+                'zeroRural': '农村零转移就业原建档立卡贫困家庭人员',
+                'landless': '失地农民',
+                'unemployed1Year': '连续失业1年以上人员',
+                'rehab': '戒毒康复人员',
+                'released': '刑满释放人员',
+                'mentalRehab': '精神障碍康复人员',
+                'exMilitary': '失业6个月以上的退役军人',
+                'caregiver': '需赡养患重大疾病直系亲属人员',
+                'none': '以上都不是'
+            };
+            
+            return conditionTexts[value] || '';
+        }
+        
+        function displayResult(isEligible, isEmploymentDifficult, employmentDifficultReason, 
+                              isGraduate, age, subsidyPeriod, subsidyAmount, 
+                              retirementInfo, hukou) {
+            const resultDiv = document.getElementById('result');
+            
+// 如果不是广东省户籍且不是高校毕业生，直接显示提示
+if (hukou !== '广东省' && !isGraduate) {
+    resultDiv.className = 'result not-eligible';
+    resultDiv.innerHTML = `
+        <h3>非广东省户籍</h3>
+        <div class="result-section">
+            <div class="result-section-title">测算结果</div>
+            <p>您目前户籍为<span class="highlight">${hukou}</span>，不符合广东省灵活就业社保补贴条件。</p>
+            <p>请返回户籍地咨询当地相关补贴政策。</p>
+        </div>
+    `;
+    resultDiv.style.display = 'block';
+    return;
+}
+            
+            resultDiv.className = 'result ' + (isEligible ? 'eligible' : 'not-eligible');
+            
+            let html = '<h3>' + (isEligible ? '符合补贴条件' : '不符合补贴条件') + '</h3>';
+            
+            if (!isEligible) {
+                html += `
+                    <div class="result-section">
+                        <div class="result-section-title">测算结果</div>
+                        <p>您目前不符合广东省灵活就业社保补贴条件，原因如下：</p>
+                        <ul>`;
+                
+                if (!isEmploymentDifficult && !isGraduate) {
+                    html += '<li>您不属于就业困难人员，也不是毕业2年内高校毕业生</li>';
+                }
+                
+                html += `</ul>
+                    </div>`;
+            } else {
+// 确定资格条件类型
+let conditionType = '';
+if (isGraduate) {
+    conditionType = '毕业2年内高校毕业生';
+} else if (isEmploymentDifficult && employmentDifficultReason.length > 0) {
+    conditionType = employmentDifficultReason[0];
+}
+
+// 如果是高校毕业生，添加不受户籍限制的说明
+if (isGraduate && hukou !== '广东省') {
+    conditionType += ' (不受户籍限制)';
+}
+                
+                html += `
+                    <div class="result-section">
+                        <div class="result-section-title">测算结果</div>
+                        <p>您是<span class="condition-type">【${conditionType}】</span>，符合申请条件。</p>
+                    </div>`;
+                
+                html += `
+                    <div class="result-section">
+                        <div class="result-section-title">补贴详情</div>
+                        <div class="key-info">
+                            <p><strong>补贴标准：</strong>每月按<span class="highlight">800元</span>给予补贴</p>
+                            <p><strong>补贴期限：</strong><span class="highlight">${subsidyPeriod}</span></p>
+                            <p><strong>预计补贴总额：</strong><span class="highlight">${subsidyAmount.toLocaleString()}元</span></p>
+                        </div>
+                    </div>`;
+                
+                // 退休信息部分
+                const delayYears = Math.floor(retirementInfo.delayMonths / 12);
+                const delayMonths = retirementInfo.delayMonths % 12;
+                
+                html += `
+                    <div class="result-section">
+                        <div class="result-section-title">退休信息</div>
+                        <div class="retirement-info">
+                            <div class="retirement-item">
+                                <div class="retirement-label">延迟退休年龄</div>
+                                <div class="retirement-value"><span class="highlight">${retirementInfo.retirementAge}岁${delayMonths}个月</span></div>
+                            </div>
+                            <div class="retirement-item">
+                                <div class="retirement-label">预计退休时间</div>
+                                <div class="retirement-value"><span class="highlight">${retirementInfo.retirementYear}年${retirementInfo.retirementMonth}月</span></div>
+                            </div>
+                        </div>
+                    </div>`;
+                
+                html += `
+                    <div class="result-section">
+                        <div class="result-section-title">补贴申请流程</div>
+                        <div class="process-steps">
+                            <div class="step">
+                                <div class="step-number">1</div>
+                                <div class="step-content">身份认定：向公共就业服务结构申请【就业困难人员认定】，毕业2年内的高校毕业生免除此步骤</div>
+                            </div>
+                            <div class="step">
+                                <div class="step-number">2</div>
+                                <div class="step-content">就业登记：向公共就业服务机构申请【以灵活就业类型登记就业】</div>
+                            </div>
+                            <div class="step">
+                                <div class="step-number">3</div>
+                                <div class="step-content">社保缴纳：以个人身份缴纳基本养老保险费、职工社会医疗保险费</div>
+                                                </div>
+                                                 <div class="step">
+                                <div class="step-number">4</div>
+                                <div class="step-content">补贴申请：通过广东政务服务网线上申请或到公共就业服务机构现场申请【灵活就业社保补贴】</div>
+                                                </div>
+                        </div>
+                    </div>`;
+            }
+            
+            resultDiv.innerHTML = html;
+            resultDiv.style.display = 'block';
+        }
+        
+        function resetForm() {
+            document.getElementById('gender').value = '';
+            document.getElementById('birthdate').value = '';
+            document.getElementById('hukou').value = '';
+            document.getElementById('jobType').value = '';
+            document.getElementById('femaleJobType').classList.add('hidden');
+            
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            
+            document.getElementById('result').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
