@@ -403,17 +403,7 @@
                 </div>
             </div>
             
-            <div id="femaleJobType" class="form-group hidden">
-                <div class="form-item">
-                    <label for="jobType">岗位性质（女性需填写）</label>
-                    <select id="jobType">
-                        <option value="">请选择</option>
-                        <option value="management">管理岗/技术岗/灵活就业人员</option>
-                        <option value="nonManagement">非管理技术岗</option>
-                    </select>
-                    <p class="tooltip">请根据您劳动合同签署的岗位性质选择</p>
-                </div>
-            </div>
+
         </div>
         
         <div class="section">
@@ -497,15 +487,7 @@
     </div>
 
     <script>
-        document.getElementById('gender').addEventListener('change', function() {
-            const femaleJobTypeDiv = document.getElementById('femaleJobType');
-            if (this.value === 'female') {
-                femaleJobTypeDiv.classList.remove('hidden');
-            } else {
-                femaleJobTypeDiv.classList.add('hidden');
-                document.getElementById('jobType').value = '';
-            }
-        });
+
         
         document.getElementById('calculateBtn').addEventListener('click', function() {
             calculateEligibility();
@@ -530,200 +512,217 @@
             });
         });
         
-        function calculateEligibility() {
-            // 获取基本信息
-            const gender = document.getElementById('gender').value;
-            const birthdate = document.getElementById('birthdate').value;
-            const hukou = document.getElementById('hukou').value;
-            const jobType = document.getElementById('jobType').value;
-            
-            // 获取就业困难人员条件
-            const conditions = document.querySelectorAll('input[name="condition"]:checked');
-            const conditionValues = Array.from(conditions).map(c => c.value);
-            
-            // 验证基本输入
-            if (!gender || !birthdate || !hukou) {
-                alert('请填写完整的个人信息');
-                return;
-            }
-            
-            // 如果是女性，需要验证岗位性质
-            if (gender === 'female' && !jobType) {
-                alert('请选择您的岗位性质');
-                return;
-            }
-            
-            // 验证是否选择了条件
-            if (conditions.length === 0) {
-                alert('请至少选择一项您的情况');
-                return;
-            }
-            
-            // 计算年龄和退休信息
-            const birthDate = new Date(birthdate);
-            const today = new Date();
-            
-            let age = today.getFullYear() - birthDate.getFullYear();
-            const monthDiff = today.getMonth() - birthDate.getMonth();
-            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                age--;
-            }
-            
-            // 计算退休年龄和退休时间
-            const retirementInfo = calculateRetirement(gender, birthDate.getFullYear(), birthDate.getMonth()+1, jobType);
-            
-// 判断是否为就业困难人员
-let isEmploymentDifficult = false;
-let employmentDifficultReason = [];
-
-// 检查是否选择了"以上都不是"
-const selectedNone = conditionValues.includes('none');
-
-if (selectedNone) {
-    // 如果选择了"以上都不是"，检查是否满足大龄失业人员条件
-    if ((gender === 'female' && age >= 40) || (gender === 'male' && age >= 50)) {
-        isEmploymentDifficult = true;
-        employmentDifficultReason.push('大龄失业人员');
+function calculateEligibility() {
+    // 获取基本信息
+    const gender = document.getElementById('gender').value;
+    const birthdate = document.getElementById('birthdate').value;
+    const hukou = document.getElementById('hukou').value;
+    
+    // 获取就业困难人员条件
+    const conditions = document.querySelectorAll('input[name="condition"]:checked');
+    const conditionValues = Array.from(conditions).map(c => c.value);
+    
+    // 验证基本输入
+    if (!gender || !birthdate || !hukou) {
+        alert('请填写完整的个人信息');
+        return;
     }
-} else if (conditions.length > 0) {
-    // 如果选择了其他条件
-    isEmploymentDifficult = true;
-    conditions.forEach(condition => {
-        employmentDifficultReason.push(getConditionText(condition.value));
-    });
-}
-
-// 判断是否符合补贴条件
-// 毕业2年内高校毕业生不受户籍限制
-const isEligible = conditionValues.includes('graduate') || 
-                   (isEmploymentDifficult && hukou === '广东省');
-                   
-            
-            // 计算补贴期限
-            let subsidyPeriod = '';
-            let subsidyAmount = 0;
-            let subsidyMonths = 0;
-            
-            if (isEligible) {
-                // 计算距离退休的月份数
-                const monthsToRetirement = (retirementInfo.retirementYear - today.getFullYear()) * 12 + 
-                                          (retirementInfo.retirementMonth - (today.getMonth()+1));
-                
-                // 判断是否距法定退休年龄不足5年
-                if (monthsToRetirement <= 60) {
-                    subsidyMonths = monthsToRetirement;
-                    subsidyPeriod = `可享受补贴至法定退休年龄（${retirementInfo.retirementAge}岁），共${Math.floor(subsidyMonths/12)}年${subsidyMonths%12}个月`;
-                } else {
-                    subsidyMonths = 36;
-                    subsidyPeriod = "可享受补贴累计最长3年（36个月）";
-                }
-                
-                subsidyAmount = subsidyMonths * 800;
-            }
-            
-            // 显示结果
-            displayResult(isEligible, isEmploymentDifficult, employmentDifficultReason, 
-                         conditionValues.includes('graduate'), age, subsidyPeriod, subsidyAmount, 
-                         retirementInfo, hukou);
+    
+    // 验证是否选择了条件
+    if (conditions.length === 0) {
+        alert('请至少选择一项您的情况');
+        return;
+    }
+    
+    // 计算年龄和退休信息
+    const birthDate = new Date(birthdate);
+    const today = new Date();
+    
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+    
+    // 计算退休年龄和退休时间
+    const retirementInfo = calculateRetirement(gender, birthDate.getFullYear(), birthDate.getMonth()+1, 'management');
+    
+    // 检查是否已超过退休年龄
+    const retirementDate = new Date(retirementInfo.retirementYear, retirementInfo.retirementMonth - 1, 1); // 月份从0开始
+    if (today >= retirementDate) {
+        // 已超过退休年龄，显示提示信息
+        displayRetirementExceeded(retirementInfo);
+        return;
+    }
+    
+    // 判断是否为就业困难人员
+    let isEmploymentDifficult = false;
+    let employmentDifficultReason = [];
+    
+    // 检查是否选择了"以上都不是"
+    const selectedNone = conditionValues.includes('none');
+    
+    if (selectedNone) {
+        // 如果选择了"以上都不是"，检查是否满足大龄失业人员条件
+        if ((gender === 'female' && age >= 40) || (gender === 'male' && age >= 50)) {
+            isEmploymentDifficult = true;
+            employmentDifficultReason.push('大龄失业人员');
+        }
+    } else if (conditions.length > 0) {
+        // 如果选择了其他条件
+        isEmploymentDifficult = true;
+        conditions.forEach(condition => {
+            employmentDifficultReason.push(getConditionText(condition.value));
+        });
+    }
+    
+    // 判断是否符合补贴条件
+    // 毕业2年内高校毕业生不受户籍限制
+    const isEligible = conditionValues.includes('graduate') || 
+                       (isEmploymentDifficult && hukou === '广东省');
+    
+    // 计算补贴期限
+    let subsidyPeriod = '';
+    let subsidyAmount = 0;
+    let subsidyMonths = 0;
+    let monthsToRetirement = 0;
+    
+    if (isEligible) {
+        // 计算距离退休的月份数
+        monthsToRetirement = (retirementInfo.retirementYear - today.getFullYear()) * 12 + 
+                                  (retirementInfo.retirementMonth - (today.getMonth()+1));
+        
+        // 判断是否距法定退休年龄不足5年
+        if (monthsToRetirement <= 60) {
+            subsidyMonths = monthsToRetirement;
+            subsidyPeriod = `可享受补贴至法定退休年龄（${retirementInfo.retirementAge}岁），共${Math.floor(subsidyMonths/12)}年${subsidyMonths%12}个月`;
+        } else {
+            subsidyMonths = 36;
+            subsidyPeriod = "可享受补贴累计最长3年（36个月）";
         }
         
-        function calculateRetirement(gender, birthYear, birthMonth, jobType) {
-            let originalRetirementAge = 0;
-            let delayRate = 0;
-            let maxDelayMonths = 0;
-            let finalRetirementAge = 0;
-            
-            if (gender === 'male') {
-                originalRetirementAge = 60;
-                delayRate = 4; // 每4个月延迟1个月
-                maxDelayMonths = 36; // 最多延迟36个月（3年）
-                finalRetirementAge = 63;
-                
-                // 计算延迟月数
-                let delayMonths = 0;
-                const baseYear = 1965;
-                
-                if (birthYear >= 1977) {
-                    delayMonths = maxDelayMonths;
-                } else {
-                    const monthsFromBase = (birthYear - baseYear) * 12 + (birthMonth - 1);
-                    delayMonths = Math.min(Math.floor(monthsFromBase / delayRate), maxDelayMonths);
-                }
-                
-                // 计算实际退休年龄和退休时间
-                const retirementYear = birthYear + originalRetirementAge + Math.floor(delayMonths / 12);
-                const retirementMonth = birthMonth + (delayMonths % 12);
-                
-                // 调整月份和年份
-                let adjustedRetirementYear = retirementYear;
-                let adjustedRetirementMonth = retirementMonth;
-                
-                if (adjustedRetirementMonth > 12) {
-                    adjustedRetirementYear += 1;
-                    adjustedRetirementMonth -= 12;
-                }
-                
-                const actualRetirementAge = originalRetirementAge + (delayMonths / 12);
-                
-                return {
-                    originalAge: originalRetirementAge,
-                    actualAge: actualRetirementAge,
-                    retirementYear: adjustedRetirementYear,
-                    retirementMonth: adjustedRetirementMonth,
-                    delayMonths: delayMonths,
-                    retirementAge: finalRetirementAge
-                };
-            } else {
-                // 女性
-                if (jobType === 'management') {
-                    originalRetirementAge = 55;
-                    delayRate = 4; // 每4个月延迟1个月
-                    maxDelayMonths = 36; // 最多延迟36个月（3年）
-                    finalRetirementAge = 58;
-                } else {
-                    originalRetirementAge = 50;
-                    delayRate = 2; // 每2个月延迟1个月
-                    maxDelayMonths = 60; // 最多延迟60个月（5年）
-                    finalRetirementAge = 55;
-                }
-                
-                // 计算延迟月数
-                let delayMonths = 0;
-                const baseYear = jobType === 'management' ? 1970 : 1975;
-                
-                const cutoffYear = jobType === 'management' ? 1982 : 1985;
-                if (birthYear >= cutoffYear) {
-                    delayMonths = maxDelayMonths;
-                } else {
-                    const monthsFromBase = (birthYear - baseYear) * 12 + (birthMonth - 1);
-                    delayMonths = Math.min(Math.floor(monthsFromBase / delayRate), maxDelayMonths);
-                }
-                
-                // 计算实际退休年龄和退休时间
-                const retirementYear = birthYear + originalRetirementAge + Math.floor(delayMonths / 12);
-                const retirementMonth = birthMonth + (delayMonths % 12);
-                
-                // 调整月份和年份
-                let adjustedRetirementYear = retirementYear;
-                let adjustedRetirementMonth = retirementMonth;
-                
-                if (adjustedRetirementMonth > 12) {
-                    adjustedRetirementYear += 1;
-                    adjustedRetirementMonth -= 12;
-                }
-                
-                const actualRetirementAge = originalRetirementAge + (delayMonths / 12);
-                
-                return {
-                    originalAge: originalRetirementAge,
-                    actualAge: actualRetirementAge,
-                    retirementYear: adjustedRetirementYear,
-                    retirementMonth: adjustedRetirementMonth,
-                    delayMonths: delayMonths,
-                    retirementAge: finalRetirementAge
-                };
-            }
+        subsidyAmount = subsidyMonths * 800;
+    }
+    
+    // 显示结果
+    displayResult(isEligible, isEmploymentDifficult, employmentDifficultReason, 
+                 conditionValues.includes('graduate'), age, subsidyPeriod, subsidyAmount, 
+                 retirementInfo, hukou, monthsToRetirement);
+}
+
+// 添加新函数：显示已超过退休年龄的提示
+function displayRetirementExceeded(retirementInfo) {
+    const resultDiv = document.getElementById('result');
+    resultDiv.className = 'result not-eligible';
+    resultDiv.innerHTML = `
+        <h3>已超过退休年龄</h3>
+        <div class="result-section">
+            <div class="result-section-title">测算结果</div>
+            <p>您已于<span class="highlight">${retirementInfo.retirementYear}年${retirementInfo.retirementMonth}月</span>达到法定退休年龄。</p>
+            <p>根据政策规定，已超过退休年龄的人员无法申请灵活就业社保补贴。</p>
+        </div>
+    `;
+    resultDiv.style.display = 'block';
+}
+
+function calculateRetirement(gender, birthYear, birthMonth, jobType) {
+    let originalRetirementAge = 0;
+    let delayRate = 0;
+    let maxDelayMonths = 0;
+    let finalRetirementAge = 0;
+    
+    if (gender === 'male') {
+        originalRetirementAge = 60;
+        delayRate = 4; // 每4个月延迟1个月
+        maxDelayMonths = 36; // 最多延迟36个月（3年）
+        finalRetirementAge = 63;
+        
+        // 计算延迟月数 - 修正后的逻辑
+        let delayMonths = 0;
+        const baseYear = 1965;
+        const baseMonth = 1; // 基准月份为1月
+        
+        if (birthYear >= 1977) {
+            // 1977年1月及之后出生的人员，统一延迟36个月（3年）
+            delayMonths = maxDelayMonths;
+        } else {
+            // 计算从基准时间（1965年1月）到出生时间的总月数
+            const totalMonthsFromBase = (birthYear - baseYear) * 12 + (birthMonth - baseMonth);
+            // 每4个月延迟1个月，向上取整
+            delayMonths = Math.min(Math.floor(totalMonthsFromBase / delayRate) + 1, maxDelayMonths);
         }
+        
+        // 计算实际退休年龄和退休时间
+        const retirementYear = birthYear + originalRetirementAge;
+        const retirementMonth = birthMonth;
+        
+        // 添加延迟月数
+        let adjustedRetirementYear = retirementYear;
+        let adjustedRetirementMonth = retirementMonth + delayMonths;
+        
+        // 调整月份和年份
+        while (adjustedRetirementMonth > 12) {
+            adjustedRetirementYear += 1;
+            adjustedRetirementMonth -= 12;
+        }
+        
+        const actualRetirementAge = originalRetirementAge + (delayMonths / 12);
+        
+        return {
+            originalAge: originalRetirementAge,
+            actualAge: actualRetirementAge,
+            retirementYear: adjustedRetirementYear,
+            retirementMonth: adjustedRetirementMonth,
+            delayMonths: delayMonths,
+            retirementAge: originalRetirementAge + Math.floor(delayMonths / 12) // 修正这里
+        };
+    } else {
+       // 女性部分 - 修正后的逻辑
+        originalRetirementAge = 55; // 女性原法定退休年龄55岁
+        delayRate = 4; // 每4个月延迟1个月
+        maxDelayMonths = 36; // 最多延迟36个月（3年）
+        
+        // 计算延迟月数
+        let delayMonths = 0;
+        const baseYear = 1970; // 女性基准年
+        const baseMonth = 1; // 基准月份为1月
+        
+        if (birthYear >= 1982) {
+            // 1982年1月及之后出生的女性，统一延迟36个月（3年）
+            delayMonths = maxDelayMonths;
+        } else {
+            // 计算从基准时间（1970年1月）到出生时间的总月数
+            const totalMonthsFromBase = (birthYear - baseYear) * 12 + (birthMonth - baseMonth);
+            // 每4个月延迟1个月
+            delayMonths = Math.min(Math.floor(totalMonthsFromBase / delayRate) + 1, maxDelayMonths);
+        }
+        
+        // 计算实际退休年龄和退休时间
+        const originalRetirementYear = birthYear + originalRetirementAge;
+        const originalRetirementMonth = birthMonth;
+        
+        // 添加延迟月数
+        let adjustedRetirementYear = originalRetirementYear;
+        let adjustedRetirementMonth = originalRetirementMonth + delayMonths;
+        
+        // 调整月份和年份
+        while (adjustedRetirementMonth > 12) {
+            adjustedRetirementYear += 1;
+            adjustedRetirementMonth -= 12;
+        }
+        
+        const actualRetirementAge = originalRetirementAge + (delayMonths / 12);
+        
+        return {
+            originalAge: originalRetirementAge,
+            actualAge: actualRetirementAge,
+            retirementYear: adjustedRetirementYear,
+            retirementMonth: adjustedRetirementMonth,
+            delayMonths: delayMonths,
+            retirementAge: Math.floor(actualRetirementAge) // 使用实际退休年龄的整数部分
+        };
+    }
+}
         
         function getConditionText(value) {
             const conditionTexts = {
@@ -745,9 +744,9 @@ const isEligible = conditionValues.includes('graduate') ||
             return conditionTexts[value] || '';
         }
         
-        function displayResult(isEligible, isEmploymentDifficult, employmentDifficultReason, 
-                              isGraduate, age, subsidyPeriod, subsidyAmount, 
-                              retirementInfo, hukou) {
+   function displayResult(isEligible, isEmploymentDifficult, employmentDifficultReason, 
+                      isGraduate, age, subsidyPeriod, subsidyAmount, 
+                      retirementInfo, hukou, monthsToRetirement) { // 添加 monthsToRetirement 参数
             const resultDiv = document.getElementById('result');
             
 // 如果不是广东省户籍且不是高校毕业生，直接显示提示
@@ -813,23 +812,26 @@ if (isGraduate && hukou !== '广东省') {
                     </div>`;
                 
                 // 退休信息部分
-                const delayYears = Math.floor(retirementInfo.delayMonths / 12);
-                const delayMonths = retirementInfo.delayMonths % 12;
-                
-                html += `
-                    <div class="result-section">
-                        <div class="result-section-title">退休信息</div>
-                        <div class="retirement-info">
-                            <div class="retirement-item">
-                                <div class="retirement-label">延迟退休年龄</div>
-                                <div class="retirement-value"><span class="highlight">${retirementInfo.retirementAge}岁${delayMonths}个月</span></div>
-                            </div>
-                            <div class="retirement-item">
-                                <div class="retirement-label">预计退休时间</div>
-                                <div class="retirement-value"><span class="highlight">${retirementInfo.retirementYear}年${retirementInfo.retirementMonth}月</span></div>
-                            </div>
-                        </div>
-                    </div>`;
+// 退休信息部分 - 只在距法定退休年龄不足5年时显示
+if (monthsToRetirement <= 60) {
+    const delayYears = Math.floor(retirementInfo.delayMonths / 12);
+    const delayMonths = retirementInfo.delayMonths % 12;
+    
+    html += `
+        <div class="result-section">
+            <div class="result-section-title">退休信息</div>
+            <div class="retirement-info">
+                <div class="retirement-item">
+                    <div class="retirement-label">延迟退休年龄</div>
+                    <div class="retirement-value"><span class="highlight">${retirementInfo.retirementAge}岁${delayMonths}个月</span></div>
+                </div>
+                <div class="retirement-item">
+                    <div class="retirement-label">预计退休时间</div>
+                    <div class="retirement-value"><span class="highlight">${retirementInfo.retirementYear}年${retirementInfo.retirementMonth}月</span></div>
+                </div>
+            </div>
+        </div>`;
+}
                 
                 html += `
                     <div class="result-section">
@@ -859,20 +861,21 @@ if (isGraduate && hukou !== '广东省') {
             resultDiv.style.display = 'block';
         }
         
-        function resetForm() {
-            document.getElementById('gender').value = '';
-            document.getElementById('birthdate').value = '';
-            document.getElementById('hukou').value = '';
-            document.getElementById('jobType').value = '';
-            document.getElementById('femaleJobType').classList.add('hidden');
-            
-            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = false;
-            });
-            
-            document.getElementById('result').style.display = 'none';
-        }
+function resetForm() {
+    document.getElementById('gender').value = '';
+    document.getElementById('birthdate').value = '';
+    document.getElementById('hukou').value = '';
+    // 删除以下两行：
+    // document.getElementById('jobType').value = '';
+    // document.getElementById('femaleJobType').classList.add('hidden');
+    
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    
+    document.getElementById('result').style.display = 'none';
+}
     </script>
 </body>
 </html>
